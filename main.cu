@@ -54,7 +54,7 @@ __device__ vec3 color(const ray& r, hitable **world, curandState *local_rand_sta
 
 __global__ void rand_init(curandState *rand_state) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        curand_init(1984, 0, 0, rand_state);
+        curand_init(12345, 0, 0, rand_state);
     }
 }
 
@@ -67,7 +67,7 @@ __global__ void render_init(int max_x, int max_y, curandState *rand_state) {
     // curand_init(1984, pixel_index, 0, &rand_state[pixel_index]);
     // BUGFIX, see Issue#2: Each thread gets different seed, same sequence for
     // performance improvement of about 2x!
-    curand_init(1984+pixel_index, 0, 0, &rand_state[pixel_index]);
+    curand_init(12345+pixel_index, 0, 0, &rand_state[pixel_index]);
 }
 
 __global__ void render(vec3 *fb, int max_x, int max_y, int ns, camera **cam, hitable **world, curandState *rand_state) {
@@ -142,12 +142,19 @@ __global__ void free_world(hitable **d_list, hitable **d_world, camera **d_camer
     delete *d_camera;
 }
 
-int main() {
-    int nx = 400;
-    int ny = 225;
-    int ns = 10;
-    int tx = 8;
-    int ty = 8;
+
+int main(int argc, char* argv[]) {
+    int nx = 400;   // default width
+    int ny = 225;   // default height
+    int ns = 10;    // default samples
+
+    // Override defaults if command-line arguments are provided
+    if (argc > 1) nx = std::stoi(argv[1]);
+    if (argc > 2) ny = std::stoi(argv[2]);
+    if (argc > 3) ns = std::stoi(argv[3]);
+
+    int tx = 32;
+    int ty = 32;
 
     std::cerr << "Rendering a " << nx << "x" << ny << " image with " << ns << " samples per pixel ";
     std::cerr << "in " << tx << "x" << ty << " blocks.\n";
