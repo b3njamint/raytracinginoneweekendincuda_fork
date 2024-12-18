@@ -116,11 +116,8 @@ __global__ void create_world(hitable **d_list, hitable **d_world, camera **d_cam
                 }
             }
         }
-        d_list[i++] = new sphere(vec3(0, 1,0),  1.0, new dielectric(1.5));
-        d_list[i++] = new sphere(vec3(-4, 1, 0), 1.0, new lambertian(vec3(0.4, 0.2, 0.1)));
-        d_list[i++] = new sphere(vec3(4, 1, 0),  1.0, new metal(vec3(0.7, 0.6, 0.5), 0.0));
         *rand_state = local_rand_state;
-        *d_world  = new hitable_list(d_list, 22*22+1+3);
+        *d_world  = new hitable_list(d_list, 22*22+1);
 
         vec3 lookfrom(13,2,3);
         vec3 lookat(0,0,0);
@@ -137,7 +134,7 @@ __global__ void create_world(hitable **d_list, hitable **d_world, camera **d_cam
 }
 
 __global__ void free_world(hitable **d_list, hitable **d_world, camera **d_camera) {
-    for(int i=0; i < 22*22+1+3; i++) {
+    for(int i=0; i < 22*22+1; i++) {
         delete ((sphere *)d_list[i])->mat_ptr;
         delete d_list[i];
     }
@@ -146,8 +143,8 @@ __global__ void free_world(hitable **d_list, hitable **d_world, camera **d_camer
 }
 
 int main() {
-    int nx = 1200;
-    int ny = 800;
+    int nx = 400;
+    int ny = 225;
     int ns = 10;
     int tx = 8;
     int ty = 8;
@@ -175,7 +172,7 @@ int main() {
 
     // make our world of hitables & the camera
     hitable **d_list;
-    int num_hitables = 22*22+1+3;
+    int num_hitables = 22*22+1;
     checkCudaErrors(cudaMalloc((void **)&d_list, num_hitables*sizeof(hitable *)));
     hitable **d_world;
     checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(hitable *)));
